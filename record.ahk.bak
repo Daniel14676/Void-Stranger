@@ -5,26 +5,36 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 
 global filePath := A_ScriptDir . "\VoidPaths.txt" 
-global keyDelay := 500
+global actionDelay := 350 ;400 ;450 note only tested wands
+global moveDelay := 25 ;50 ;75
+global holdDownDelay := 60
+global chestDelay := 4000 - actionDelay
+;450 (400?) for ? action
+;? for a punch action
+;? for successful wand action
+
 ;honorary global is -9 (well at 1, but everything is +10ed) in the file location, 
-; which holds last floor location so this can recall it!
+; which holds last floor location so this can recall it!wdsazwdsaz
 
 ;TODO add spesial characters to prompt as needed
 ;  add a wait for animations character
 
-
 ;^g exits
 ;^Capslock starts/stops recording
 ;^f stores the floor recording
-;^h starts the program
+;^d starts the program
 
 
 ;exit
 ^g::	;Ctrl + g
-    MsgBox the end	
-    ExitApp 		
+    MsgBox the end
+    ExitApp 	
 return
 
+^x::
+    InputBox, ActionLine, Record Floor?,%floorOrgActionLine%`n Put an ']' at the end to signify the next level is spesial`n 'p' to throw a Msgbox and stop climbing,,600,200,,,,,%ClipBoard%
+    DebugLine(ActionLine)
+return
 
 ;Record inputs and store to ClipBoard
 ^CapsLock::
@@ -41,6 +51,8 @@ return
 ^f::
     DefFloor := GetFileLine(-9)
     InputBox, floorInput, Floor?,,,100,110,,,,,%DefFloor%
+    if ErrorLevel
+        return
     
     floorOrgActionLine := GetFileLine(floorInput)
     InputBox, newLine, Record Floor?,%floorOrgActionLine%`n Put an ']' at the end to signify the next level is spesial`n 'p' to throw a Msgbox and stop climbing,,600,200,,,,,%ClipBoard%
@@ -75,7 +87,7 @@ return
 ;note: when will it stop on it's own, eof? what if their is a big ass gap?
 
 
-^h::
+^d::
     DefFloor := GetFileLine(-9)
     InputBox, floorInput, Start at Floor?,,,150,110,,,,,%DefFloor%
     if ErrorLevel
@@ -108,9 +120,10 @@ return
         ReplaceFileLine(-9, DefFloorInt+1) 
     }
 
-    MsgBox, C
+    MsgBox, Done
 
 return
+
 
 ;note needs to be able to add lines to the file
 ReplaceFileLine(TargetLine, newText) {
@@ -144,6 +157,43 @@ ReplaceFileLine(TargetLine, newText) {
     file.Close()
 }
 
+
+
+DebugLine(ActionLine) {
+    
+    if (ActionLine == ""){
+        return 1
+    }
+    if (ActionLine == " "){
+        return 1
+    }
+    
+    Loop, parse, ActionLine
+    {
+        key := A_LoopField
+        if (key == "p"){
+            MsgBox, help P
+        }
+        else if (key == "w" || key == "a" || key == "s" || key == "d"){
+            Send, {%key% down}
+            Sleep, %holdDownDelay% ; Adjust the sleep time as needed
+            Send, {%key% up}
+            Sleep, %moveDelay%
+        }
+        else if (key == "c"){
+            Sleep, %chestDelay%
+        }
+        else {
+            Send, {%key% down}
+            Sleep, %holdDownDelay% ; Adjust the sleep time as needed
+            Send, {%key% up}
+            Sleep, %actionDelay%
+        }
+    }
+    MsgBox, done
+    return 0
+}
+
 ;returns 1 if you should stop, else 0
 TypeTextFromLine(TargetLine) {
     ActionLine := GetFileLine(TargetLine)
@@ -151,11 +201,31 @@ TypeTextFromLine(TargetLine) {
     if (ActionLine == ""){
         return 1
     }
+    if (ActionLine == " "){
+        return 1
+    }
     
     Loop, parse, ActionLine
     {
-        SendKeyFromChar(A_LoopField)
-        Sleep, %delay%
+        key := A_LoopField
+        if (key == "p"){
+            MsgBox, help P
+        }
+        else if (key == "w" || key == "a" || key == "s" || key == "d"){
+            Send, {%key% down}
+            Sleep, %holdDownDelay% ; Adjust the sleep time as needed
+            Send, {%key% up}
+            Sleep, %moveDelay%
+        }
+        else if (key == "c"){
+            Sleep, %chestDelay%
+        }
+        else {
+            Send, {%key% down}
+            Sleep, %holdDownDelay% ; Adjust the sleep time as needed
+            Send, {%key% up}
+            Sleep, %actionDelay%
+        }
     }
     return 0
 }
@@ -173,7 +243,7 @@ GetFileLine(TargetLine) {
         
         lineNumber := A_Index
         
-        if (A_Index = TargetLine + 10) {
+        if (A_Index == TargetLine + 10) {
             
             return A_LoopReadLine
         }
@@ -181,10 +251,15 @@ GetFileLine(TargetLine) {
     return ""
 }
 
+;NOT USED!
 ;translates the character input into presses, used in TypeTextFromLine
 SendKeyFromChar(key) {
+    spaceing := 5
     switch key {
-            case "w": Send w ;arrows
+            case "w": 
+                Send {w down}
+                sleep spaceing
+                Send {w up}
             case "a": Send a
             case "s": Send s
             case "d": Send d            
