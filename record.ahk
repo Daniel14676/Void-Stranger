@@ -13,7 +13,13 @@ global keyDelay := 500
 ;  add a wait for animations character
 
 
+;^g exits
+;^Capslock starts/stops recording
+;^f stores the floor recording
+;^d starts the program
 
+
+;exit
 ^g::	;Ctrl + g
     MsgBox the end	
     ExitApp 		
@@ -35,9 +41,11 @@ return
 ^f::
     DefFloor := GetFileLine(-9)
     InputBox, floorInput, Floor?,,,100,110,,,,,%DefFloor%
+    if ErrorLevel
+        return
     
     floorOrgActionLine := GetFileLine(floorInput)
-    InputBox, newLine, Floor?,%floorOrgActionLine%`n Put an ']' at the end to signify the next level is spesial`n 'p' to throw a Msgbox and stop climbing,,600,150,,,,,%ClipBoard%
+    InputBox, newLine, Record Floor?,%floorOrgActionLine%`n Put an ']' at the end to signify the next level is spesial`n 'p' to throw a Msgbox and stop climbing,,600,200,,,,,%ClipBoard%
     
     if ErrorLevel
         return
@@ -68,9 +76,10 @@ return
 ;note: how do i want to stop it? (perhaps an optional floor cutoff?)
 ;note: when will it stop on it's own, eof? what if their is a big ass gap?
 
-^h::
+
+^d::
     DefFloor := GetFileLine(-9)
-    InputBox, floorInput, Floor?,,,100,110,,,,,%DefFloor%
+    InputBox, floorInput, Start at Floor?,,,150,110,,,,,%DefFloor%
     if ErrorLevel
         return
     if (DefFloor != floorInput){
