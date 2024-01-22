@@ -4,6 +4,7 @@ SendMode Input  ; Recommended for new scripts due to its superior speed and reli
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 
+;remove the click
 global filePath := A_ScriptDir . "\VoidPaths.txt" 
 global actionDelay := 350 ;400 ;450 note only tested wands
 global moveDelay := 25 ;50 ;75
@@ -98,26 +99,28 @@ return
     }
     
     
-    MouseClick, left
     BreakYet := TypeTextFromLine(DefFloor)
     if (BreakYet){
         return
     }
     
-    DefFloorInt := Asc(DefFloor) - Asc("0")
     loop {
-        DefFloorInt := 1 + DefFloorInt
-        Msgbox, 1, Stop here?, %DefFloorInt% Press cancel to stop the program`n press OK or just wait a few seconds for it to continue, 10
+        DefFloor := 1 + DefFloor
+    StartTime1 := A_TickCount
+        Msgbox, 1, Stop here?, %DefFloor% Press cancel to stop the program`n press OK or just wait a few seconds for it to continue, 10
         IfMsgBox Cancel
             return
-        
-        ;TODO click
-        MouseClick, left
-        BreakYet := TypeTextFromLine(DefFloorInt)
+    ElapsedTime1 := A_TickCount - StartTime1
+    if (ElapsedTime1 < 2500) {
+        levelLoadWait := 2500-ElapsedTime1
+        sleep levelLoadWait
+    }
+    
+        BreakYet := TypeTextFromLine(DefFloor)
         if (BreakYet){
             return
         }        
-        ReplaceFileLine(-9, DefFloorInt+1) 
+        ReplaceFileLine(-9, DefFloor+1) 
     }
 
     MsgBox, Done
@@ -173,6 +176,8 @@ DebugLine(ActionLine) {
         key := A_LoopField
         if (key == "p"){
             MsgBox, help P
+            IfMsgBox Cancel
+                return 1
         }
         else if (key == "w" || key == "a" || key == "s" || key == "d"){
             Send, {%key% down}
