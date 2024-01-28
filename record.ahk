@@ -6,9 +6,9 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 ;remove the click
 global filePath := A_ScriptDir . "\VoidPaths.txt" 
-global actionDelay := 350 ;400 ;450 note only tested wands
-global moveDelay := 25 ;50 ;75
-global holdDownDelay := 60
+global actionDelay := 375 ;400 ;450 note only tested wands
+global moveDelay := 35 ;50 ;75
+global holdDownDelay := 70
 global chestDelay := 4000 - actionDelay
 ;450 (400?) for ? action
 ;? for a punch action
